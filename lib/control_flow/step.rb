@@ -84,6 +84,11 @@ module ControlFlow
       context.instance_eval(&self._validates)
     end
 
+    # Returns the value set in the definition
+    def value
+      self._value
+    end
+
   end
 
 

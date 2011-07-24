@@ -129,6 +129,18 @@ describe ControlFlow::Step do
 
   end
 
+  describe "#value" do
+
+    before do
+      klass.value('zomg')
+    end
+
+    it "should return class attribute of _value" do
+      object.value.should == 'zomg'
+    end
+
+  end
+
   [:complete?, :valid?].each do |block_method|
 
     set_method = {:complete? => :is_complete, :valid? => :validates}[block_method]
