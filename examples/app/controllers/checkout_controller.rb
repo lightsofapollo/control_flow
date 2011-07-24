@@ -4,8 +4,12 @@ class CheckoutController < ApplicationController
   
   before_filter do
     # get current flow (:free_service, :paid_service)
-    @user_flow = CheckoutUserFlow.enter(current_flow)
-    @user_flow.set_step(current_step)
+    
+    #initialize control flow in context of controller
+    @user_flow = CheckoutUserFlow.new(self) 
+    
+    @user_flow.enter_flow(current_flow)
+    @user_flow.enter_step(current_step)
     
     unless(@user_flow.valid?)
       @user_flow.goto_previous_valid_state

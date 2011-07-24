@@ -29,18 +29,24 @@ class CheckoutUserFlow < ControlFlow::Base
     # These conditions must be met for this state to be valid
     
     
-    service do
+    step :service do
+      url(services_url)
+      
       is_complete do
         current_user.service
       end
     end
     
     # These are eq to classes
-    organization do
+    step :organization do
+      url(organizations_url)
+      
       depends_on :service
     end
     
-    account do
+    step :account do
+      url(accounts_url)
+      
       depends_on :service
 
       is_complete do
@@ -48,11 +54,14 @@ class CheckoutUserFlow < ControlFlow::Base
       end
     end
     
-    profile do
+    step :profile do
+      url(profiles_url)      
+      
       depends_on :account
     end
     
-    payment do
+    step :payment do
+      url(payments_url)
       depends_on :organization, :account
       
       is_complete do
@@ -67,7 +76,8 @@ class CheckoutUserFlow < ControlFlow::Base
       
     end
     
-    completed_free do
+    step :completed_free do
+      url(free_completed_url)
       depends_on :account, :organization
 
       validates do
@@ -75,7 +85,8 @@ class CheckoutUserFlow < ControlFlow::Base
       end
     end
     
-    completed_paid do
+    step :completed_paid do
+      url(paid_completed_url)
       depends_on :payment
     end
      
