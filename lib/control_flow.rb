@@ -5,4 +5,6 @@ module ControlFlow
 
   autoload :Base, 'control_flow/base'
   autoload :Step, 'control_flow/step'
+  autoload :Flow, 'control_flow/flow'
+
 end

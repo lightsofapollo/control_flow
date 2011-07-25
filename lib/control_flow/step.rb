@@ -3,7 +3,7 @@ module ControlFlow
 
     class_attribute :_dependents, :_validates, :_is_complete, :_value
 
-    attr_reader :context
+    attr_reader :context, :name
 
     self._validates = Proc.new { true }
     self._is_complete = Proc.new { true }
@@ -13,8 +13,12 @@ module ControlFlow
       # Sets the value of step designed with use with urls
       #
       # @param [Mixed] value
-      def value(value)
-        self._value = value
+      def value(value = nil, &block)
+        if(block_given?)
+          self._value = block
+        else
+          self._value = value
+        end
       end
 
       # Sets the steps this step is dependant on
@@ -47,7 +51,8 @@ module ControlFlow
 
 
     # Initializes step with context
-    def initialize(context)
+    def initialize(name, context)
+      @name = name
       @context = context
     end
 
@@ -86,7 +91,11 @@ module ControlFlow
 
     # Returns the value set in the definition
     def value
-      self._value
+      if(self._value.respond_to?(:call))
+        context.instance_eval(&self._value)
+      else
+        self._value
+      end
     end
 
   end

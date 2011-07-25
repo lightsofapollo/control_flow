@@ -26,7 +26,7 @@ describe ControlFlow::Step do
   end
 
   let(:object) do
-    klass.new(context)
+    klass.new(:test, context)
   end
 
   let(:block) do
@@ -107,6 +107,10 @@ describe ControlFlow::Step do
       object.context.should == context
     end
 
+    it "should set name to given" do
+      object.name.should == :test
+    end
+
   end
 
   describe "#dependencies" do
@@ -141,9 +145,14 @@ describe ControlFlow::Step do
 
   end
 
-  [:complete?, :valid?].each do |block_method|
+  [:complete?, :valid?, :value, :dependencies].each do |block_method|
 
-    set_method = {:complete? => :is_complete, :valid? => :validates}[block_method]
+    set_method = {
+      :complete? => :is_complete,
+      :valid? => :validates,
+      :value => :value,
+      :dependencies => :depends_on
+    }[block_method]
 
     describe "##{block_method}" do
 
