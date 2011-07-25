@@ -12,14 +12,14 @@ class CheckoutController < ApplicationController
     @user_flow.enter_step(current_step)
     
     unless(@user_flow.valid?)
-      @user_flow.goto_previous_valid_state
+      redirect_to @user_flow.previous_state.value
     end
   end
   
   def create
     if(resource.save)
       #...
-      @user_flow.goto_next_state
+      redirect_to @user_flow.next_state.value
     end
   end
   

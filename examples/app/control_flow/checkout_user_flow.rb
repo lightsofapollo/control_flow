@@ -4,17 +4,17 @@ class CheckoutUserFlow < ControlFlow::Base
     # This is run inside the before filter
     
     #steps :organization, ...
-    step :service
-    step :organization
-    step :account
-    step :profile
-    step :completed_free
+    add_step :service
+    add_step :organization
+    add_step :account
+    add_step :profile
+    add_step :completed_free
   end
   
   
   define_flow :paid_service do
     # This is run inside the before filter
-    steps :service, :organization, :payment, :profile, :completed_paid
+    add_step :service, :organization, :payment, :profile, :completed_paid
   end
   
   define_steps do
@@ -30,7 +30,9 @@ class CheckoutUserFlow < ControlFlow::Base
     
     
     step :service do
-      url(services_url)
+      value do
+        order_url
+      end
       
       is_complete do
         current_user.service
@@ -39,13 +41,17 @@ class CheckoutUserFlow < ControlFlow::Base
     
     # These are eq to classes
     step :organization do
-      url(organizations_url)
+      value do
+        organizations_url
+      end
       
       depends_on :service
     end
     
     step :account do
-      url(accounts_url)
+      value do
+        accounts_url
+      end
       
       depends_on :service
 
@@ -55,13 +61,17 @@ class CheckoutUserFlow < ControlFlow::Base
     end
     
     step :profile do
-      url(profiles_url)      
+      value do
+        profiles_url
+      end     
       
       depends_on :account
     end
     
     step :payment do
-      url(payments_url)
+      value do
+        payments_url
+      end
       depends_on :organization, :account
       
       is_complete do
@@ -77,7 +87,10 @@ class CheckoutUserFlow < ControlFlow::Base
     end
     
     step :completed_free do
-      url(free_completed_url)
+      value do
+        free_completed_url
+      end
+      
       depends_on :account, :organization
 
       validates do
@@ -86,7 +99,9 @@ class CheckoutUserFlow < ControlFlow::Base
     end
     
     step :completed_paid do
-      url(paid_completed_url)
+      value do
+        paid_completed_url
+      end
       depends_on :payment
     end
      
