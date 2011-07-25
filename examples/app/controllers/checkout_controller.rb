@@ -12,7 +12,7 @@ class CheckoutController < ApplicationController
     @user_flow.enter_step(current_step)
     
     unless(@user_flow.valid?)
-      redirect_to @user_flow.previous_state.value
+      redirect_to @user_flow.last_valid_step.value
     end
   end
   
