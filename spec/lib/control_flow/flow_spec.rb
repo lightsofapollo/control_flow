@@ -6,6 +6,38 @@ describe ControlFlow::Flow do
     Class.new(ControlFlow::Step)
   end
 
+  def self.create_complicated_steps
+
+    class_eval do
+
+      let(:steps) do
+        {
+          :login => create_step,
+          :profile => create_step,
+          :checkout => create_step,
+          :complete => create_step
+        }
+      end
+
+      let(:object) do
+        klass.add_step(steps.keys)
+        klass.new(context, steps)
+      end
+
+      before do
+        steps[:login].is_complete do
+          amazing_method # Returns true
+        end
+
+        steps[:profile].depends_on(:login)
+        steps[:checkout].depends_on(:profile)
+        steps[:complete].depends_on(:checkout, :login)
+      end
+        
+    end
+  end
+
+
   let(:klass) do
     @klass
   end
@@ -224,6 +256,29 @@ describe ControlFlow::Flow do
         object.previous_step.should == object.steps[:two]
       end
 
+    end
+
+  end
+
+
+  describe "#step_dependancies_met?" do
+
+
+  end
+
+  describe "#calculate_step_dependencies" do
+    create_complicated_steps
+
+    before do
+      object.enter_step(:complete)
+    end
+
+    let(:list) do
+      object.send(:calculate_step_dependencies)
+    end
+
+    it "should return a list of all depedencies in order of steps" do
+      list.should == [:checkout, :profile, :login]
     end
 
   end

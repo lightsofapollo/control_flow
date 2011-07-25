@@ -1,6 +1,7 @@
 module ControlFlow
   require 'rubygems'
   require 'active_support/core_ext/class/attribute'
+  require 'active_support/core_ext/object/blank'
   
 
   autoload :Base, 'control_flow/base'

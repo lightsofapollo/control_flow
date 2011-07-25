@@ -25,13 +25,14 @@ module ControlFlow
 
     end
 
-    attr_reader :steps, :context, :current_step
+    attr_reader :steps, :context, :current_step, :last_valid_step
 
     # Initializes control flow
     #
     # @param [Object] context in which steps are executed
     # @param [Hash] list of steps
     def initialize(context, steps)
+      @last_valid_step = nil
       @current_step = nil
       @steps = {}
       @steps.merge!(steps)
@@ -63,8 +64,49 @@ module ControlFlow
     end
 
     def valid?
+      if(step_dependancies_met?)
+        if(step.valid?)
+          return true
+        end
+      end
+      false
+    end
+
+    def step_dependencies_met?
 
     end
+
+    # Calculates all depedencies to check 
+    # returns them in order of step definition.
+    #
+    # So if step three depends on step two and two depends
+    # on one the order returned would be: two, :one if we are
+    # on step three and :one if we are on step two
+    def calculate_step_dependencies(step = nil, current_list = nil)
+      current_list ||= []
+
+      unless(step)
+        step = current_step
+      end
+
+      all_deps = []
+      step_deps = step.dependencies
+
+
+      unless(step_deps.blank?)
+        step_deps.each do |dep|
+          dep_step = steps[dep]
+
+          all_deps << dep
+          all_deps += calculate_step_dependencies(steps[dep], all_deps) 
+          all_deps.uniq!
+        end
+      end
+
+      all_deps
+    end
+
+    protected :step_dependencies_met?, :calculate_step_dependencies
 
     # Returns and instance of the next step
     #
