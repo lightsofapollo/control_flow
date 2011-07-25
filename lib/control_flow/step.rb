@@ -19,6 +19,8 @@ module ControlFlow
         else
           self._value = value
         end
+
+        self
       end
 
       # Sets the steps this step is dependant on
@@ -30,6 +32,8 @@ module ControlFlow
         else
           self._dependents = args.flatten
         end
+        
+        self
       end
 
       # Sets validation this step uses
@@ -37,6 +41,8 @@ module ControlFlow
       # @param [Proc] logic for block
       def validates(&block)
         self._validates = block
+
+        self
       end
 
       # Sets validation this step uses to verify
@@ -45,6 +51,8 @@ module ControlFlow
       # @param [Proc] logic for block
       def is_complete(&block)
         self._is_complete = block
+
+        self
       end
 
     end

@@ -26,14 +26,28 @@ describe ControlFlow::Flow do
 
       before do
         steps[:login].is_complete do
+          called << :complete_login
           amazing_method # Returns true
         end
 
-        steps[:profile].depends_on(:login)
-        steps[:checkout].depends_on(:profile)
-        steps[:complete].depends_on(:checkout, :login)
+        steps[:profile].depends_on(:login).is_complete do
+          called << :complete_profile
+          amazing_method
+        end
+
+        steps[:checkout].depends_on(:profile).is_complete do
+          called << :complete_checkout
+          amazing_method
+        end
+
+        steps[:complete].depends_on(:checkout, :login).is_complete do
+          called << :complete_complete
+          amazing_method
+        end.validates do
+          called << :validates_complete
+          amazing_method
+        end
       end
-        
     end
   end
 
@@ -58,6 +72,12 @@ describe ControlFlow::Flow do
 
   let(:context_klass) do
     Class.new do
+
+      attr_reader :called
+
+      def initialize
+        @called = []
+      end
 
       def amazing_method
         true
@@ -261,7 +281,144 @@ describe ControlFlow::Flow do
   end
 
 
-  describe "#step_dependancies_met?" do
+  describe "#valid?" do
+    create_complicated_steps
+
+    let(:expected_called) do
+      [
+        :complete_checkout,
+        :complete_profile,
+        :complete_login,
+        :validates_complete
+      ]
+    end
+
+    all_called = proc do
+      context.called.should == expected_called
+    end
+
+    context "when valid" do
+      before do
+        object.enter_step(:complete)
+        @result = object.valid?
+      end
+
+      it "should return true" do
+        @result.should == true
+      end
+
+      specify(&all_called)
+    end
+
+    context "when invalid" do
+      before do
+        steps[:complete].validates do
+          called << :validates_complete
+          false
+        end
+
+        object.enter_step(:complete)
+        @result = object.valid?
+      end
+
+      it "should return false" do
+        @result.should == false
+      end
+
+      it "should set last_valid_step to previous_step" do
+        object.last_valid_step.should == object.previous_step
+      end
+
+      specify(&all_called)
+    end
+
+    context "when step deps are not met" do
+
+      before do
+        steps[:checkout].is_complete do
+          called << :complete_checkout
+          false
+        end
+
+        object.enter_step(:complete)
+        @result = object.valid?
+      end
+
+      it "should return false" do
+        @result.should == false
+      end
+
+      it "should have set last_valid_step to :profile" do
+        object.last_valid_step.should == object.steps[:profile]
+      end
+
+    end
+
+  end
+
+
+  describe "#step_dependencies_met?" do
+    create_complicated_steps
+
+    context "when all deps are met" do
+
+      let(:expected_called) do
+        [
+          :complete_checkout,
+          :complete_profile,
+          :complete_login
+        ]
+      end
+
+      before do
+        object.enter_step(:complete)
+        @result = object.send(:step_dependencies_met?)
+      end
+
+      it "should return true" do
+        @result.should === true
+      end
+
+      it "should have checked deps in correct order" do
+        context.called.should == expected_called
+      end
+
+    end
+
+    context "when deps are not met" do
+
+      let(:expected_called) do
+        [
+          :complete_checkout,
+          :complete_profile,
+        ]
+      end
+
+
+      before do
+        steps[:checkout].is_complete do
+          called << :complete_checkout
+          false
+        end
+
+        object.enter_step(:complete)
+        @result = object.send(:step_dependencies_met?)
+      end
+
+      it "should return false" do
+        @result.should === false
+      end
+
+      it "should set last_valid_step to :profile" do
+        object.last_valid_step.should == object.steps[:profile]
+      
+      end
+
+      it "should have checked deps in correct order" do
+        context.called.should == expected_called
+      end
+
+    end
 
 
   end

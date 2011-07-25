@@ -64,16 +64,33 @@ module ControlFlow
     end
 
     def valid?
-      if(step_dependancies_met?)
-        if(step.valid?)
+      if(step_dependencies_met?)
+        if(current_step.valid?)
           return true
+        else
+          @last_valid_step = previous_step
         end
       end
       false
     end
 
     def step_dependencies_met?
+      valid = true
+      deps = calculate_step_dependencies
+      deps.each do |step_name|
+        step = steps[step_name]
 
+        if(!step.complete?)
+          valid = false
+        else
+          if(!valid)
+            @last_valid_step = step
+            break
+          end
+        end
+      end
+
+      valid
     end
 
     # Calculates all depedencies to check 
@@ -95,10 +112,11 @@ module ControlFlow
 
       unless(step_deps.blank?)
         step_deps.each do |dep|
+          next if(all_deps.include?(dep))
           dep_step = steps[dep]
 
           all_deps << dep
-          all_deps += calculate_step_dependencies(steps[dep], all_deps) 
+          all_deps += calculate_step_dependencies(steps[dep], all_deps)
           all_deps.uniq!
         end
       end
