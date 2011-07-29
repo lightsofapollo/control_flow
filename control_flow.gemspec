@@ -6,9 +6,9 @@ Gem::Specification.new do |gem|
   gem.version     = ControlFlow::VERSION
   gem.author      = "Lights of Apollo, LLC"
   gem.email       = 'gems@lightsofapollo.com'
-  gem.homepage    = 'lightsofapollo.com'
-  gem.summary     = %q{TODO: Write a gem summary}
-  gem.description = %q{TODO: Write a gem description}
+  gem.homepage    = 'http://www.lightsofapollo.com'
+  gem.summary     = %q{Control Flow library for abstract out user flow steps from controllers and other objects}
+  gem.description = %q{Control Flow library for abstract out user flow steps from controllers and other objects}
 
   gem.files         = `git ls-files`.split("\n")
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   # gem.add_dependency('il8n')
-  gem.add_dependency('activesupport', '~> 3.0.9')
+  gem.add_dependency('activesupport', '>= 3.0.0')
 
   gem.add_development_dependency 'ZenTest', '~> 4.5'
   gem.add_development_dependency 'maruku', '~> 0.6'
