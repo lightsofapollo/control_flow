@@ -80,11 +80,18 @@ module ControlFlow
       deps.each do |step_name|
         step = steps[step_name]
 
+        # Check if state is complete
         if(!step.complete?)
+          # If its not complete mark invalid
           valid = false
-        else
-          if(!valid)
+          # If step is incomplete but valid? we can enter that step
+          # Thus is it the last *valid* step
+          if(step.valid?)
             @last_valid_step = step
+            break
+          else
+            # If it was not valid the last step is our best guess
+            @last_valid_step = reference_step_position(-1, step)
             break
           end
         end
@@ -121,35 +128,58 @@ module ControlFlow
         end
       end
 
-      all_deps
+      step_list.inject([]) do |map, value|
+        map << value if all_deps.include?(value)
+        map
+      end
     end
 
     protected :step_dependencies_met?, :calculate_step_dependencies
 
-    # Returns and instance of the next step
+
+    # Finds step by referencing given step and a position state
     #
-    # @returns [ControllFlow::Step] instance of the next step
-    def next_step
-      index = step_list.index(current_step.name)
-      if(index && (step_list.length > index + 1))
-        steps[step_list[index + 1]]
+    #     #steps = [:one, :two, :three]
+    #     #current step is :two
+    #
+    #     object.reference_step_position(-1) # => :one
+    #     object.reference_step_position(1) # => :three
+    #
+    # @param [Integer] position to move by can be positive or negative
+    # @param [ControlFlow::Step] step to reference defaults to current step
+    def reference_step_position(position, step = nil)
+      step ||= current_step
+      unless(step.is_a?(Symbol))
+        step = step.name
+      end
+
+      index = step_list.index(step)
+
+
+      total_steps = step_list.length
+      new_index = (index + position)
+
+      return false unless total_steps > 1
+
+      if(total_steps > new_index && new_index > -1)
+        steps[step_list[new_index]]
       else
         false
       end
     end
 
+    # Returns and instance of the next step
+    # 
+    # @returns [ControllFlow::Step] instance of the next step
+    def next_step
+      reference_step_position(1)
+    end
+
     # Returns and instance of the previous step
     #
-    # @returns [ControllFlow::Step] instance of the previous step
+    # @returns [ControlFlow::Step] instance of the previous step
     def previous_step
-      index = step_list.index(current_step.name)
-
-      if(index && (index - 1 >= 0))
-        steps[step_list[index - 1]]
-      else
-        false
-      end
-
+      reference_step_position(-1)
     end
 
     # Returns the value of the current step

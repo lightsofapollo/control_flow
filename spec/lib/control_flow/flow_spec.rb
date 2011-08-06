@@ -205,6 +205,44 @@ describe ControlFlow::Flow do
 
     end
 
+  end
+
+
+  describe "#reference_step_position" do
+
+    before do
+      object.enter_step(:two)
+    end
+
+    it "should return :one when using -1" do
+      object.reference_step_position(-1).should == object.steps[:one]
+    end
+
+    it "should return :two when using -1 with given step" do
+      step = object.reference_step_position(-1, object.steps[:three])
+      step.should == object.steps[:two]
+    end
+
+    it "should return :two when using -1 with given step as symbol" do
+      step = object.reference_step_position(-1, :three)
+      step.should == object.steps[:two]
+    end
+
+    it "should return :three when using 1" do
+      step = object.reference_step_position(1)
+      step.should == object.steps[:three]
+    end
+
+    it "should return false when using -1 on the :one step" do
+      step = object.reference_step_position(-1, :one)
+      step.should === false
+    end
+
+    it "should return false when using 1 on :three step" do
+      step = object.reference_step_position(1, object.steps[:three])
+      step.should === false
+    end
+
 
   end
 
@@ -262,7 +300,7 @@ describe ControlFlow::Flow do
 
       it "should return false" do
         object.previous_step.should === false
-      end      
+      end
 
     end
 
@@ -286,9 +324,9 @@ describe ControlFlow::Flow do
 
     let(:expected_called) do
       [
-        :complete_checkout,
-        :complete_profile,
         :complete_login,
+        :complete_profile,
+        :complete_checkout,
         :validates_complete
       ]
     end
@@ -343,67 +381,87 @@ describe ControlFlow::Flow do
         object.enter_step(:complete)
         @result = object.valid?
       end
-
+  
       it "should return false" do
         @result.should == false
       end
-
       it "should have set last_valid_step to :profile" do
-        object.last_valid_step.should == object.steps[:profile]
+        object.last_valid_step.should == object.steps[:checkout]
       end
-
     end
-
   end
 
 
   describe "#step_dependencies_met?" do
     create_complicated_steps
+    
+    let(:expected_called) do
+      [
+        :complete_login,
+        :complete_profile,
+        :complete_checkout
+      ]
+    end
+
+    def self.calculate_result
+      class_eval do
+        before do
+          object.enter_step(:complete)
+          @result = object.send(:step_dependencies_met?)
+        end
+
+        it "should have checked deps in correct order" do
+          context.called.should == expected_called
+        end
+
+      end
+    end
 
     context "when all deps are met" do
-
-      let(:expected_called) do
-        [
-          :complete_checkout,
-          :complete_profile,
-          :complete_login
-        ]
-      end
-
-      before do
-        object.enter_step(:complete)
-        @result = object.send(:step_dependencies_met?)
-      end
+      calculate_result
 
       it "should return true" do
         @result.should === true
       end
 
-      it "should have checked deps in correct order" do
-        context.called.should == expected_called
-      end
-
     end
 
-    context "when deps are not met" do
-
-      let(:expected_called) do
-        [
-          :complete_checkout,
-          :complete_profile,
-        ]
-      end
-
+    context "when step dep is not met and last step is valid" do
 
       before do
         steps[:checkout].is_complete do
           called << :complete_checkout
           false
         end
-
-        object.enter_step(:complete)
-        @result = object.send(:step_dependencies_met?)
       end
+
+      calculate_result
+
+      it "should return false" do
+        @result.should === false
+      end
+
+      it "should set last_valid_step to :profile" do
+        object.last_valid_step.should == object.steps[:checkout]
+      end
+
+    end
+
+    context "when step dep is not met and last step is invalid" do
+      before do
+
+        steps[:checkout].is_complete do
+          called << :complete_checkout
+          false
+        end.validates do
+          called << :validates_complete
+          false
+        end
+
+        expected_called << :validates_complete
+      end
+
+      calculate_result
 
       it "should return false" do
         @result.should === false
@@ -411,11 +469,6 @@ describe ControlFlow::Flow do
 
       it "should set last_valid_step to :profile" do
         object.last_valid_step.should == object.steps[:profile]
-      
-      end
-
-      it "should have checked deps in correct order" do
-        context.called.should == expected_called
       end
 
     end
@@ -435,7 +488,7 @@ describe ControlFlow::Flow do
     end
 
     it "should return a list of all depedencies in order of steps" do
-      list.should == [:checkout, :profile, :login]
+      list.should == [:login, :profile, :checkout]
     end
 
   end
