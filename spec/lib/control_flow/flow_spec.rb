@@ -111,10 +111,11 @@ describe ControlFlow::Flow do
 
   describe "#initialize" do
 
-    context "when successful" do
+    context "when successful but add step order is reverse of step defintion order" do
 
       before do
-        klass.add_step(:one, :two)
+        # This reversal is intentional!
+        klass.add_step(:two, :one)
       end
       
       let(:steps) do
@@ -145,11 +146,11 @@ describe ControlFlow::Flow do
     context "when missing steps" do
 
       before do
-        klass.add_step(:one, :two)
+        klass.add_step(:two, :three, :one)
       end
 
       let(:steps) do
-        {:one => create_step}
+        {:one => create_step, :three => create_step}
       end
 
       let(:object) do

@@ -38,7 +38,7 @@ module ControlFlow
       @steps.merge!(steps)
       @context = context
 
-      if(@steps.keys != self.step_list)
+      if(@steps.keys.sort != self.step_list.sort)
         raise("Missing step: #{(step_list - @steps.keys).join(', ')}")
       end
 
