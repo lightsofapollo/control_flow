@@ -7,18 +7,18 @@ module ControlFlow
     class InvalidFlow < Exception
     end
 
-    class_attribute :steps
-    class_attribute :flows
+    class_attribute :defined_steps
+    class_attribute :defined_flows
 
     attr_reader :current_flow, :context
 
     def self.inherited(klass)
       if(self == ControlFlow::Base)
-        klass.steps = {}
-        klass.flows = {}
+        klass.defined_steps = {}
+        klass.defined_flows = {}
       else
-        klass.steps = self.steps.clone
-        klass.flows = self.flows.clone
+        klass.defined_steps = self.defined_steps.clone
+        klass.defined_flows = self.defined_flows.clone
       end
       super
     end
@@ -31,7 +31,7 @@ module ControlFlow
       # @param [Block] class defintion for flow
       def define_flow(name, &block)
         # This is intentional because inherited is called after Class.new
-        klass = self.flows[name] = Class.new(Flow)
+        klass = self.defined_flows[name] = Class.new(Flow)
         klass.class_eval(&block)
         klass
       end
@@ -42,7 +42,7 @@ module ControlFlow
       # @param [Block] class defintion for step
       def define_step(name, &block)
         # This is intentional because inherited is called after Class.new
-        step = self.steps[name] = Class.new(Step)
+        step = self.defined_steps[name] = Class.new(Step)
         step.class_eval(&block)
         step
       end
@@ -61,17 +61,16 @@ module ControlFlow
     #
     # @param [Symbol] name of flow
     def enter_flow(flow)
-      if(flows.has_key?(flow))
+      if(defined_flows.has_key?(flow))
         send_steps = {}
         
-        flows[flow].step_list.each do |step|
-          send_steps[step] = steps[step] if steps.has_key?(step)
+        defined_flows[flow].step_list.each do |step|
+          send_steps[step] = defined_steps[step] if defined_steps.has_key?(step)
         end
 
-        @current_flow = flows[flow].new(context, send_steps)
-
+        @current_flow = defined_flows[flow].new(context, send_steps)
       else
-        raise(InvalidFlow, "invalid flow given use: #{flows.keys.join(', ')}")
+        raise(InvalidFlow, "invalid flow given use: #{defined_flows.keys.join(', ')}")
       end
     end
 

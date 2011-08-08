@@ -46,8 +46,8 @@ describe ControlFlow::Base do
 
     context "when inheriting from base" do
 
-      specify { ControlFlow::Base.steps.object_id.should_not == klass.steps.object_id }
-      specify { ControlFlow::Base.flows.object_id.should_not == klass.flows.object_id }
+      specify { ControlFlow::Base.defined_steps.object_id.should_not == klass.defined_steps.object_id }
+      specify { ControlFlow::Base.defined_flows.object_id.should_not == klass.defined_flows.object_id }
 
     end
 
@@ -65,17 +65,17 @@ describe ControlFlow::Base do
       end
     end
 
-    it "should have created new flow class stored in flows[:paid]" do
-      inherited_from = (ControlFlow::Flow > klass.flows[:paid])
+    it "should have created new flow class stored in.defined_flows[:paid]" do
+      inherited_from = (ControlFlow::Flow > klass.defined_flows[:paid])
       inherited_from.should === true
     end
 
     it "should have executed block in class creation context" do
-      klass.flows[:paid].step_list.should == [:one]
+      klass.defined_flows[:paid].step_list.should == [:one]
     end
 
     it "should have setup second flow" do
-      klass.flows[:free].step_list.should == [:two]
+      klass.defined_flows[:free].step_list.should == [:two]
     end
 
   end
@@ -88,13 +88,13 @@ describe ControlFlow::Base do
       end
     end
 
-    it "should have created new step class stored in flows[:paid]" do
-      inherited_from = (ControlFlow::Step > klass.steps[:login])
+    it "should have created new step class stored in.defined_flows[:paid]" do
+      inherited_from = (ControlFlow::Step > klass.defined_steps[:login])
       inherited_from.should === true
     end
 
     it "should have executed block in class creation context" do
-      klass.steps[:login]._value.should == :one
+      klass.defined_steps[:login]._value.should == :one
     end
 
   end
@@ -119,10 +119,14 @@ describe ControlFlow::Base do
 
         end
 
+        klass.define_flow :paid do
+          add_step(:three, :two)
+        end
+
         object.enter_flow(:free)
       end
 
-      specify { klass.steps[:one].should_not be_nil }
+      specify { klass.defined_steps[:one].should_not be_nil }
 
       it "should have initialized flow as current_flow" do
         object.current_flow.should be_an(ControlFlow::Flow)
@@ -130,7 +134,21 @@ describe ControlFlow::Base do
       end
 
       it "should have set current steps in flow" do
-        object.current_flow.steps.keys.should == [:one]
+        object.enter_flow(:free)
+        object.steps.keys.should == [:one]
+      end
+
+      context "when switching flows" do
+
+        before do
+          object.enter_flow(:free)
+        end
+
+        it "should not contaminate new flow after switching" do
+          object.enter_flow(:paid)
+          object.steps.keys.should == [:three, :two]
+        end
+
       end
 
     end
@@ -145,7 +163,7 @@ describe ControlFlow::Base do
       it "should raise invalid flow exception" do
         lambda { object.enter_flow(:fake) }.should raise_exception(
           ControlFlow::Base::InvalidFlow,
-          "invalid flow given use: #{object.flows.keys.join(', ')}"
+          "invalid flow given use: #{object.defined_flows.keys.join(', ')}"
         )
       end
 
