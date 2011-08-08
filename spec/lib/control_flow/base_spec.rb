@@ -105,9 +105,14 @@ describe ControlFlow::Base do
 
     context "when flow is valid" do
       before do
-        klass.define_step :one do
+        klass.define_step :two do
 
         end
+
+        klass.define_step :three do
+
+        end
+
         object.enter_flow(:free)
       end
 
@@ -119,7 +124,7 @@ describe ControlFlow::Base do
       end
 
       it "should have set current steps in flow" do
-        object.current_flow.steps.keys.should == object.steps.keys
+        object.current_flow.steps.keys.should == [:one]
       end
 
     end
