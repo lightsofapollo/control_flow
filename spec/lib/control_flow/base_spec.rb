@@ -61,6 +61,10 @@ describe ControlFlow::Base do
       klass.define_flow :paid do
         add_step(:one)
       end
+
+      klass.define_flow :free do
+        add_step(:two)
+      end
     end
 
     it "should have created new flow class stored in flows[:paid]" do
@@ -70,6 +74,10 @@ describe ControlFlow::Base do
 
     it "should have executed block in class creation context" do
       klass.flows[:paid].step_list.should == [:one]
+    end
+
+    it "should have setup second flow" do
+      klass.flows[:free].step_list.should == [:two]
     end
 
   end

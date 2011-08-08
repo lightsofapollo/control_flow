@@ -109,6 +109,29 @@ describe ControlFlow::Flow do
 
   end
 
+  describe "#inherited" do
+
+    let(:flow1) do
+      Class.new(klass) do
+        add_step(:one, :two)
+      end
+    end
+
+    let(:flow2) do
+      Class.new(klass) do
+        add_step(:three, :four)
+      end
+    end
+
+    it "should not share steps" do
+      flow2.step_list.should_not == flow1.step_list
+    end
+    
+    specify { flow1.step_list.should == [:one, :two] }
+    specify { flow2.step_list.should == [:three, :four] }
+
+  end
+
   describe "#initialize" do
 
     context "when successful but add step order is reverse of step defintion order" do
