@@ -119,7 +119,13 @@ describe ControlFlow::Flow do
       end
       
       let(:steps) do
-        {:one => create_step, :two => create_step}
+        {:one => create_step, :two => create_step, :five => create_step}
+      end
+      
+      let(:expected_steps) do
+        allowed = steps.clone
+        allowed.delete(:five)
+        allowed
       end
 
       let(:object) do
@@ -127,7 +133,7 @@ describe ControlFlow::Flow do
       end
 
       it "should have assigned steps to steps" do
-        object.steps.keys.should == steps.keys
+        object.steps.keys.sort.should == expected_steps.keys.sort
       end
 
       it "should assign context" do
@@ -135,7 +141,7 @@ describe ControlFlow::Flow do
       end
 
       it "should initialize steps" do
-        steps.each do |key, value|
+        expected_steps.each do |key, value|
           object.steps[key].should be_an(value)
           object.steps[key].context.should == context
         end

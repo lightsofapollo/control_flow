@@ -31,25 +31,28 @@ module ControlFlow
     #
     # @param [Object] context in which steps are executed
     # @param [Hash] list of steps
-    def initialize(context, steps)
+    def initialize(context, add_steps)
       @last_valid_step = nil
       @current_step = nil
       @steps = {}
-      @steps.merge!(steps)
-      @context = context
 
-      all_steps = @steps.keys.sort
-      missing = self.step_list - all_steps
+      @context = context
+      missing = []
+
+      step_list.each do |step|
+        unless(add_steps.has_key?(step))
+          missing << step
+          next
+        end
+
+        klass = add_steps[step]
+        @steps[step] = klass.new(step, @context)
+      end
 
       unless(missing.empty?)
         raise("Missing step: #{missing.join(', ')}")
       end
-
-      @steps.each do |name, klass|
-        @steps[name] = klass.new(name, @context)
-      end
     end
-
 
     # Enters the current step
     #
