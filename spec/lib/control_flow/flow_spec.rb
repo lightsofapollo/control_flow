@@ -150,7 +150,12 @@ describe ControlFlow::Flow do
       end
 
       let(:steps) do
-        {:one => create_step, :three => create_step}
+        {
+          :one => create_step, 
+          :sevenity_x => create_step, 
+          :four => create_step,
+          :three => create_step
+        }
       end
 
       let(:object) do
