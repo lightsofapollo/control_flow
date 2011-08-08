@@ -3,8 +3,7 @@ require 'spec_helper'
 describe ControlFlow::Base do
 
   let(:klass) do
-    Class.new(ControlFlow::Base) do
-
+    create_base do
       define_flow :free do
         add_step :one
       end
@@ -12,7 +11,6 @@ describe ControlFlow::Base do
       define_step :one do
 
       end
-
     end
   end
 

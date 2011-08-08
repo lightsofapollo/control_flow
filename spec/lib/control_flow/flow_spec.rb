@@ -152,7 +152,7 @@ describe ControlFlow::Flow do
       end
 
       it "should have assigned steps to steps" do
-        object.steps.keys.sort.should == expected_steps.keys.sort
+        object.steps.keys.map(&:to_s).sort.should == expected_steps.keys.map(&:to_s).sort
       end
 
       it "should assign context" do

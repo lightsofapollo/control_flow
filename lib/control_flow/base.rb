@@ -10,16 +10,17 @@ module ControlFlow
     class_attribute :steps
     class_attribute :flows
 
-    self.flows = {}
-    self.steps = {}
-
     attr_reader :current_flow, :context
 
     def self.inherited(klass)
       if(self == ControlFlow::Base)
+        klass.steps = {}
+        klass.flows = {}
+      else
         klass.steps = self.steps.clone
         klass.flows = self.flows.clone
       end
+      super
     end
 
     class << self
@@ -29,7 +30,10 @@ module ControlFlow
       # @param [Symbol] name for the flow
       # @param [Block] class defintion for flow
       def define_flow(name, &block)
-        self.flows[name] = Class.new(Flow, &block)
+        # This is intentional because inherited is called after Class.new
+        klass = self.flows[name] = Class.new(Flow)
+        klass.class_eval(&block)
+        klass
       end
 
       # Defines a new step for this base
@@ -37,7 +41,10 @@ module ControlFlow
       # @param [Symbol] name for the step
       # @param [Block] class defintion for step
       def define_step(name, &block)
-        self.steps[name] = Class.new(Step, &block)
+        # This is intentional because inherited is called after Class.new
+        step = self.steps[name] = Class.new(Step)
+        step.class_eval(&block)
+        step
       end
 
     end
