@@ -62,7 +62,14 @@ module ControlFlow
     # @param [Symbol] name of flow
     def enter_flow(flow)
       if(flows.has_key?(flow))
-        @current_flow = flows[flow].new(context, steps)
+        send_steps = {}
+        
+        flows[flow].step_list.each do |step|
+          send_steps[step] = steps[step] if steps.has_key?(step)
+        end
+
+        @current_flow = flows[flow].new(context, send_steps)
+
       else
         raise(InvalidFlow, "invalid flow given use: #{flows.keys.join(', ')}")
       end
