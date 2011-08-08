@@ -2,10 +2,6 @@ require 'spec_helper'
 
 describe ControlFlow::Flow do
 
-  def create_step
-    Class.new(ControlFlow::Step)
-  end
-
   def self.create_complicated_steps
 
     class_eval do
