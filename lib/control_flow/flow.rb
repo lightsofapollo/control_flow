@@ -114,7 +114,7 @@ module ControlFlow
       valid
     end
 
-    # Calculates all depedencies to check 
+    # Calculates all dependencies to check 
     # returns them in order of step definition.
     #
     # So if step three depends on step two and two depends
@@ -133,6 +133,10 @@ module ControlFlow
 
       unless(step_deps.blank?)
         step_deps.each do |dep|
+          unless(step_list.include?(dep))
+            raise(InvalidStep, "Missing dependency step: #{dep}")
+          end
+
           next if(all_deps.include?(dep))
           dep_step = steps[dep]
 

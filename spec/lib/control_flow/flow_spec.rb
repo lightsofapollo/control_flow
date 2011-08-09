@@ -522,6 +522,22 @@ describe ControlFlow::Flow do
       list.should == [:login, :profile, :checkout]
     end
 
+    context "when depending on a step not in the step list" do
+
+      before do
+        steps[:complete].depends_on(:missing)
+        object.enter_step(:complete)
+      end
+
+      it "should raise invalid step error" do
+        lambda { object.send(:calculate_step_dependencies) }.should raise_exception(
+          ControlFlow::Flow::InvalidStep,
+          "Missing dependency step: missing"
+        )
+      end
+
+    end
+
   end
 
   describe "#step_value" do
