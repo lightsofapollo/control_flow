@@ -4,13 +4,11 @@ module ControlFlow
     class InvalidStep < Exception
     end
 
-    class_attribute :step_list, :test
+    class_attribute :step_list
 
     # When control flow is inherited clone step list so
     # the steps are not shared between classes
     def self.inherited(klass)
-      self.test ||= []
-      self.test << "Called inherited"
       if(self == ControlFlow::Flow)
         klass.step_list = []
       else
